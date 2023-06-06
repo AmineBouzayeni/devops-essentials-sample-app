@@ -10,21 +10,21 @@ jobs:
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
       - name: Check out repository code
         uses: actions/checkout@v3
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
       - name: Execute Gradle build
         run: ./gradlew build
   DeployToStage:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/new-feature'
     environment: staging
+    needs: Build
     steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
       - name: Copy via ssh
         uses: garygrossgarten/github-action-scp@v0.8.0
         with:
-          local: src/**
-          remote: scp/src
+          local: src
+          remote: scp/
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
-          password: ${{ secrets.ENCRYPTEDPASSPHRASE }}
-   
+          password: ${{ secrets.PASSWORD }}
