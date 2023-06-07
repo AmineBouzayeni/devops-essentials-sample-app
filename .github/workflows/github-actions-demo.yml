@@ -18,7 +18,7 @@ jobs:
           path: src  
   DeployToStage:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/master'
     environment: staging
     needs: Build
     steps:
@@ -39,7 +39,7 @@ jobs:
           password: ${{ secrets.PASSWORD }}
   DeployToProduction:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/master'
     environment: production
     needs: [Build, DeployToStage]
     steps:
