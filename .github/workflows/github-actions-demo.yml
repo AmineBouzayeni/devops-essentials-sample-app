@@ -1,0 +1,60 @@
+name: GitHub Actions Demo
+run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+on: [push]
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'Running build automation'
+      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Execute Gradle build
+        run: ./gradlew build
+      - uses: actions/upload-artifact@v2
+        with:
+          name: src-build
+          path: src  
+  DeployToStage:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    environment: staging
+    needs: Build
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: src-build
+          path: src
+      - name: Copy via ssh
+        uses: garygrossgarten/github-action-scp@v0.8.0
+        with:
+          local: src
+          remote: /var/www/html/
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+  DeployToProduction:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    environment: production
+    needs: [Build, DeployToStage]
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: src-build
+          path: src
+      - name: Copy via ssh
+        uses: garygrossgarten/github-action-scp@v0.8.0
+        with:
+          local: src
+          remote: /var/www/html/
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}        
